@@ -119,8 +119,13 @@ class Lines extends React.Component<LinesProps> {
 
         const mouse = getRelativeMouse(this.base.current, ev)
 
+        // expand the box width, so it's easier to see the tooltip for the first & last timepoints
+        const boundedBox = dualAxis.innerBounds.padWidth(
+            -0.05 * dualAxis.innerBounds.width
+        )
+
         let hoverX
-        if (dualAxis.innerBounds.contains(mouse)) {
+        if (boundedBox.contains(mouse)) {
             const closestValue = minBy(this.allValues, (point) =>
                 Math.abs(horizontalAxis.place(point.x) - mouse.x)
             )
