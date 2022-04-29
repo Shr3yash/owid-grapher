@@ -8,6 +8,7 @@ import {
     makeSafeForCSS,
     minBy,
     excludeUndefined,
+    isMobile,
 } from "../../clientUtils/Util.js"
 import { computed, action, observable } from "mobx"
 import { SeriesName } from "../core/GrapherConstants.js"
@@ -74,10 +75,10 @@ class Areas extends React.Component<AreasProps> {
     @action.bound private onCursorMove(ev: MouseEvent | TouchEvent): void {
         const { dualAxis, seriesArr } = this.props
 
+        const boxPadding = isMobile() ? 44 : 25
+
         // expand the box width, so it's easier to see the tooltip for the first & last timepoints
-        const boundedBox = dualAxis.innerBounds.padWidth(
-            -0.05 * dualAxis.innerBounds.width
-        )
+        const boundedBox = dualAxis.innerBounds.padWidth(-boxPadding)
 
         if (this.base.current) {
             const mouse = getRelativeMouse(this.base.current, ev)

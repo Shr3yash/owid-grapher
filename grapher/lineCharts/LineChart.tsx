@@ -13,6 +13,7 @@ import {
     excludeUndefined,
     isNumber,
     sortedUniqBy,
+    isMobile,
 } from "../../clientUtils/Util.js"
 import { computed, action, observable } from "mobx"
 import { observer } from "mobx-react"
@@ -119,10 +120,10 @@ class Lines extends React.Component<LinesProps> {
 
         const mouse = getRelativeMouse(this.base.current, ev)
 
+        const boxPadding = isMobile() ? 44 : 25
+
         // expand the box width, so it's easier to see the tooltip for the first & last timepoints
-        const boundedBox = dualAxis.innerBounds.padWidth(
-            -0.05 * dualAxis.innerBounds.width
-        )
+        const boundedBox = dualAxis.innerBounds.padWidth(-boxPadding)
 
         let hoverX
         if (boundedBox.contains(mouse)) {
