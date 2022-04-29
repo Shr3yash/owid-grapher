@@ -46,15 +46,43 @@ class Areas extends React.Component<AreasProps> {
 
     @observable hoverIndex?: number
 
-    @action.bound private onCursorMove(
-        ev: React.MouseEvent<SVGGElement> | React.TouchEvent<SVGElement>
-    ): void {
+    private container?: SVGElement
+    componentDidMount(): void {
+        const base = this.base.current as SVGGElement
+        const container = base.closest("svg") as SVGElement
+        container.addEventListener("mousemove", this.onCursorMove)
+        container.addEventListener("mouseleave", this.onCursorLeave)
+        container.addEventListener("touchstart", this.onCursorMove)
+        container.addEventListener("touchmove", this.onCursorMove)
+        container.addEventListener("touchend", this.onCursorLeave)
+        container.addEventListener("touchcancel", this.onCursorLeave)
+        this.container = container
+    }
+
+    componentWillUnmount(): void {
+        const { container } = this
+        if (!container) return
+
+        container.removeEventListener("mousemove", this.onCursorMove)
+        container.removeEventListener("mouseleave", this.onCursorLeave)
+        container.removeEventListener("touchstart", this.onCursorMove)
+        container.removeEventListener("touchmove", this.onCursorMove)
+        container.removeEventListener("touchend", this.onCursorLeave)
+        container.removeEventListener("touchcancel", this.onCursorLeave)
+    }
+
+    @action.bound private onCursorMove(ev: MouseEvent | TouchEvent): void {
         const { dualAxis, seriesArr } = this.props
 
-        if (this.base.current) {
-            const mouse = getRelativeMouse(this.base.current, ev.nativeEvent)
+        // expand the box width, so it's easier to see the tooltip for the first & last timepoints
+        const boundedBox = dualAxis.innerBounds.padWidth(
+            -0.05 * dualAxis.innerBounds.width
+        )
 
-            if (dualAxis.innerBounds.contains(mouse)) {
+        if (this.base.current) {
+            const mouse = getRelativeMouse(this.base.current, ev)
+
+            if (boundedBox.contains(mouse)) {
                 const closestPoint = minBy(seriesArr[0].points, (d) =>
                     Math.abs(
                         dualAxis.horizontalAxis.place(d.position) - mouse.x
@@ -159,16 +187,7 @@ class Areas extends React.Component<AreasProps> {
         const { hoverIndex } = this
 
         return (
-            <g
-                ref={this.base}
-                className="Areas"
-                onMouseMove={this.onCursorMove}
-                onMouseLeave={this.onCursorLeave}
-                onTouchStart={this.onCursorMove}
-                onTouchMove={this.onCursorMove}
-                onTouchEnd={this.onCursorLeave}
-                onTouchCancel={this.onCursorLeave}
-            >
+            <g ref={this.base} className="Areas">
                 <rect
                     x={horizontalAxis.range[0]}
                     y={verticalAxis.range[1]}
